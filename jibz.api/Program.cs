@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using jibz.api.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -17,6 +20,9 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=jibz.db"));
 
 app.UseCors("AllowReactApp");
 
