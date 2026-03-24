@@ -10,5 +10,8 @@ namespace jibz.api.Data
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<Mountain> Mountains { get; set; }
+        public DbSet<Feature> Features { get; set; }
+        public DbSet<Clip> Clips { get; set; }
     }
 }
