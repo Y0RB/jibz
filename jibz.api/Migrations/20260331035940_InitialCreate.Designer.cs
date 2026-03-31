@@ -11,8 +11,8 @@ using jibz.api.Data;
 namespace Jibz.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260326184937_AddClipModels")]
-    partial class AddClipModels
+    [Migration("20260331035940_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,17 +26,29 @@ namespace Jibz.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Bindings")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Board")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Boots")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("FeatureId")
+                    b.Property<int>("FeatureId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("MountainId")
+                    b.Property<int>("MountainId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Stance")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -122,11 +134,33 @@ namespace Jibz.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Difficulty")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FeatureType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImageURL")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MountainId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("isActive")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("MountainId");
 
                     b.ToTable("Features");
                 });
@@ -137,13 +171,57 @@ namespace Jibz.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MapURL")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("State")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.ToTable("Mountains");
+                });
+
+            modelBuilder.Entity("jibz.api.Models.MountainRating", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MountainId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("MountainId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("MountainRatings");
                 });
 
             modelBuilder.Entity("jibz.api.Models.User", b =>
@@ -162,8 +240,8 @@ namespace Jibz.Api.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("LocalMountain")
-                        .HasColumnType("TEXT");
+                    b.Property<int?>("HomeMountainId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -178,21 +256,27 @@ namespace Jibz.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("HomeMountainId");
+
                     b.ToTable("Users");
                 });
 
             modelBuilder.Entity("jibz.api.Models.Clip", b =>
                 {
                     b.HasOne("jibz.api.Models.Feature", "Feature")
-                        .WithMany()
-                        .HasForeignKey("FeatureId");
+                        .WithMany("Clips")
+                        .HasForeignKey("FeatureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("jibz.api.Models.Mountain", "Mountain")
-                        .WithMany()
-                        .HasForeignKey("MountainId");
+                        .WithMany("Clips")
+                        .HasForeignKey("MountainId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("jibz.api.Models.User", "User")
-                        .WithMany()
+                        .WithMany("Clips")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -213,7 +297,7 @@ namespace Jibz.Api.Migrations
                         .IsRequired();
 
                     b.HasOne("jibz.api.Models.User", "User")
-                        .WithMany()
+                        .WithMany("ClipComments")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -232,7 +316,7 @@ namespace Jibz.Api.Migrations
                         .IsRequired();
 
                     b.HasOne("jibz.api.Models.User", "User")
-                        .WithMany()
+                        .WithMany("ClipLikes")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -242,11 +326,75 @@ namespace Jibz.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("jibz.api.Models.Feature", b =>
+                {
+                    b.HasOne("jibz.api.Models.Mountain", "Mountain")
+                        .WithMany("Features")
+                        .HasForeignKey("MountainId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Mountain");
+                });
+
+            modelBuilder.Entity("jibz.api.Models.MountainRating", b =>
+                {
+                    b.HasOne("jibz.api.Models.Mountain", "Mountain")
+                        .WithMany("MountainRatings")
+                        .HasForeignKey("MountainId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("jibz.api.Models.User", "User")
+                        .WithMany("MountainRatings")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Mountain");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("jibz.api.Models.User", b =>
+                {
+                    b.HasOne("jibz.api.Models.Mountain", "HomeMountain")
+                        .WithMany()
+                        .HasForeignKey("HomeMountainId");
+
+                    b.Navigation("HomeMountain");
+                });
+
             modelBuilder.Entity("jibz.api.Models.Clip", b =>
                 {
                     b.Navigation("Comments");
 
                     b.Navigation("Likes");
+                });
+
+            modelBuilder.Entity("jibz.api.Models.Feature", b =>
+                {
+                    b.Navigation("Clips");
+                });
+
+            modelBuilder.Entity("jibz.api.Models.Mountain", b =>
+                {
+                    b.Navigation("Clips");
+
+                    b.Navigation("Features");
+
+                    b.Navigation("MountainRatings");
+                });
+
+            modelBuilder.Entity("jibz.api.Models.User", b =>
+                {
+                    b.Navigation("ClipComments");
+
+                    b.Navigation("ClipLikes");
+
+                    b.Navigation("Clips");
+
+                    b.Navigation("MountainRatings");
                 });
 #pragma warning restore 612, 618
         }

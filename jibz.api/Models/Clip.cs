@@ -10,12 +10,16 @@ namespace jibz.api.Models
         public string? Description { get; set; }
         public string VideoUrl { get; set; } = null!;
         public string? TrickName { get; set; }
+        public string? Board{get; set;}
+        public string? Stance{get; set;}
+        public string? Boots{get; set;}
+        public string? Bindings{get; set;}
 
-        public int? FeatureId { get; set; }
-        public Feature? Feature { get; set; }
+        public int FeatureId { get; set; } 
+        public Feature Feature { get; set; } = null!;
 
-        public int? MountainId { get; set; }
-        public Mountain? Mountain { get; set; }
+        public int MountainId { get; set; } 
+        public Mountain Mountain { get; set; } = null!;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
