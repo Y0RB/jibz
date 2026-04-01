@@ -51,7 +51,7 @@ namespace jibz.api.Controllers
             _context.Clips.Add(clip);
 
             await _context.SaveChangesAsync();
-            
+
             return CreatedAtAction(nameof(GetById), new { id = clip.Id }, clip);
         }
 

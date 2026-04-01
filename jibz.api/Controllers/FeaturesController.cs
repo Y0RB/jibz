@@ -32,9 +32,10 @@ namespace jibz.api.Controllers
             if (existingFeature != null)
                 return BadRequest("A feature with the same name already exists.");
 
-            _context.Features.Add(feature); // Add the new feature to the database context
 
             feature.CreatedAt = DateTime.UtcNow; // Set the CreatedAt property to the current UTC time      
+
+            _context.Features.Add(feature); // Add the new feature to the database context
 
             await _context.SaveChangesAsync(); // Save changes to the database asynchronously
 
@@ -68,7 +69,7 @@ namespace jibz.api.Controllers
             feature.Description = updatedFeature.Description;
 
             await _context.SaveChangesAsync(); // Save changes to the database asynchronously
-            
+
             return NoContent(); // Return a 204 No Content response to indicate successful update
         }
 

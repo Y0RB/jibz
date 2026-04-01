@@ -7,11 +7,11 @@ namespace jibz.api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ClipsCommentsController : ControllerBase
+    public class ClipCommentsController : ControllerBase
     {
         private readonly AppDbContext _context;
 
-        public ClipsCommentsController(AppDbContext context)
+        public ClipCommentsController(AppDbContext context)
         {
             _context = context;
         }
