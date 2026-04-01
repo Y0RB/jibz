@@ -7,11 +7,11 @@ namespace jibz.api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ClipCommentsController : ControllerBase
+    public class ClipsCommentsController : ControllerBase
     {
         private readonly AppDbContext _context;
 
-        public ClipCommentsController(AppDbContext context)
+        public ClipsCommentsController(AppDbContext context)
         {
             _context = context;
         }
@@ -21,12 +21,15 @@ namespace jibz.api.Controllers
         public async Task<IActionResult> AddComment(ClipComment comment)
         {
             comment.CreatedAt = DateTime.UtcNow;
+
             _context.ClipComments.Add(comment);
+
             await _context.SaveChangesAsync();
+            
             return Ok(comment);
         }
 
-        // DELETE /api/clipcomments/5
+        // DELETE /api/clipscomments/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteComment(int id)
         {

@@ -36,7 +36,7 @@ namespace jibz.api.Controllers
                 .Include(c => c.User)
                 .Include(c => c.Likes)
                 .Include(c => c.Comments)
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .FirstOrDefaultAsync(c => c.Id == id); // Find the clip by ID and include related data (user, likes, comments) asynchronously
 
             if (clip == null) return NotFound();
             return Ok(clip);
@@ -47,8 +47,11 @@ namespace jibz.api.Controllers
         public async Task<IActionResult> Create(Clip clip)
         {
             clip.CreatedAt = DateTime.UtcNow;
+
             _context.Clips.Add(clip);
+
             await _context.SaveChangesAsync();
+            
             return CreatedAtAction(nameof(GetById), new { id = clip.Id }, clip);
         }
 
