@@ -7,7 +7,7 @@ namespace jibz.api.Models
         public User User { get; set; } = null!;
         public int MountainId { get; set; }
         public Mountain Mountain { get; set; } = null!;
-        public int Score { get; set; }
+        public int Rating { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

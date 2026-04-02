@@ -66,7 +66,10 @@ namespace jibz.api.Controllers
 
             // Update fields
             feature.Name = updatedFeature.Name;
-            feature.Description = updatedFeature.Description;
+            feature.Difficulty = updatedFeature.Difficulty;
+            feature.ImageURL = updatedFeature.ImageURL;
+            feature.FeatureType = updatedFeature.FeatureType;
+            feature.isActive = updatedFeature.isActive;
 
             await _context.SaveChangesAsync(); // Save changes to the database asynchronously
 

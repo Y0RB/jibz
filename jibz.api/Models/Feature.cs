@@ -13,7 +13,7 @@ namespace jibz.api.Models
         public DateTime CreatedAt{get; set;} = DateTime.UtcNow;
 
         public int MountainId {get; set;}
-        public Mountain Mountain{get; set;}
+        public required Mountain Mountain{get; set;}
         public ICollection<Clip> Clips {get; set;} = new List<Clip>();
         
     }

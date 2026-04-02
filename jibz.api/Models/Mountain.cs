@@ -11,7 +11,7 @@ namespace jibz.api.Models
         public string State { get; set; } = null!;
         public string City { get; set; } = null!;
         public string Slug { get; set; } = null!;
-        public string MapURL {get; set; } = null!;
+        public string MapImageURL {get; set; } = null!;
 
         public ICollection<Clip> Clips { get; set; } = new List<Clip>();
         public ICollection<Feature> Features {get; set;}= new List<Feature>();

@@ -64,8 +64,11 @@ namespace jibz.api.Controllers
 
             // Update fields
             mountain.Name = updatedMountain.Name;
-            mountain.Location = updatedMountain.Location;
-            mountain.Difficulty = updatedMountain.Difficulty;
+            mountain.State = updatedMountain.State;
+            mountain.City = updatedMountain.City;
+            mountain.MapImageURL = updatedMountain.MapImageURL;
+
+
 
             await _context.SaveChangesAsync();
 

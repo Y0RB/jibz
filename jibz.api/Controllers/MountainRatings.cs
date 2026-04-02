@@ -65,6 +65,7 @@ namespace jibz.api.Controllers
             rating.MountainId = updatedRating.MountainId;
             rating.UserId = updatedRating.UserId;
             rating.Rating = updatedRating.Rating;
+
             await _context.SaveChangesAsync(); // Save changes to the database asynchronously
 
             return NoContent(); // Return a 204 No Content response to indicate successful update
