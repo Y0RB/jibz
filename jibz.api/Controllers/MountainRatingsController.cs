@@ -62,8 +62,6 @@ namespace jibz.api.Controllers
                 return NotFound();
 
             // Update fields
-            rating.MountainId = updatedRating.MountainId;
-            rating.UserId = updatedRating.UserId;
             rating.Rating = updatedRating.Rating;
 
             await _context.SaveChangesAsync(); // Save changes to the database asynchronously
