@@ -25,23 +25,29 @@ namespace jibz.api.Controllers
 
             if (exists) return Conflict("Already liked");
 
-            like.CreatedAt = DateTime.UtcNow;
+            like.CreatedAt = DateTime.UtcNow; // Set the CreatedAt property to the current UTC time. More up to date compared to model will override model when actually added
+
             _context.ClipLikes.Add(like);
+
             await _context.SaveChangesAsync();
-            return Ok();
+
+            return Ok(like);
         }
 
         // DELETE /api/cliplikes
-        [HttpDelete]
-        public async Task<IActionResult> Unlike(ClipLike like)
+        [HttpDelete("{clipId}/{userId}")]
+        public async Task<IActionResult> Unlike(int clipId, int userId)
         {
             var existing = await _context.ClipLikes
-                .FirstOrDefaultAsync(l => l.ClipId == like.ClipId && l.UserId == like.UserId);
+                .FirstOrDefaultAsync(l => l.ClipId == clipId && l.UserId == userId); // Find the existing like by clipId and userId
 
-            if (existing == null) return NotFound();
+            if (existing == null)
+                return NotFound();
 
             _context.ClipLikes.Remove(existing);
+            
             await _context.SaveChangesAsync();
+
             return NoContent();
         }
     }
