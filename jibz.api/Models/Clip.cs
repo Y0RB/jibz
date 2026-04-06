@@ -1,5 +1,6 @@
-namespace jibz.api.Models
-{
+namespace jibz.api.Models;
+using jibz.api.Enums;
+
     public class Clip
     {
         public int Id { get; set; }
@@ -25,5 +26,5 @@ namespace jibz.api.Models
 
         public ICollection<ClipLike> Likes { get; set; } = new List<ClipLike>();
         public ICollection<ClipComment> Comments { get; set; } = new List<ClipComment>();
+        public ICollection<ClipSportType> SportTypes { get; set; } = new List<ClipSportType>();
     }
-}

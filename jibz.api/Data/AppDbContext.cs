@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using jibz.api.Models;
+using System.Security.Cryptography;
+using jibz.api.Enums;
 
-namespace jibz.api.Data
-{
+namespace jibz.api.Data;
+
     public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
@@ -13,9 +15,11 @@ namespace jibz.api.Data
         public DbSet<Clip> Clips { get; set; }
         public DbSet<ClipLike> ClipLikes { get; set; }
         public DbSet<ClipComment> ClipComments { get; set; }
+        public DbSet<ClipSportType> ClipSportTypes { get; set; }
         public DbSet<Feature> Features { get; set; }
         public DbSet<Mountain> Mountains { get; set; }
         public DbSet<MountainRating> MountainRatings { get; set; }
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,7 +31,15 @@ namespace jibz.api.Data
 
             modelBuilder.Entity<MountainRating>()
                 .HasIndex(r => new { r.MountainId, r.UserId })
-                .IsUnique();    
+                .IsUnique();
+
+            modelBuilder.Entity<ClipSportType>(entity =>
+            {
+                entity.HasKey(cs => new { cs.ClipId, cs.Sport });
+
+                entity.HasOne(cs => cs.Clip)
+                    .WithMany(c => c.SportTypes)
+                    .HasForeignKey(cs => cs.ClipId);
+            });    
         }
     }
-}
