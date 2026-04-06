@@ -55,6 +55,28 @@ namespace jibz.api.Controllers
             return CreatedAtAction(nameof(GetById), new { id = clip.Id }, clip);
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, Clip updatedClip)
+        {
+            if (id != updatedClip.Id) return BadRequest();
+
+            var clip = await _context.Clips.FindAsync(id);
+            if (clip == null) return NotFound();
+
+            clip.Title = updatedClip.Title;
+            clip.Description = updatedClip.Description;
+            clip.CreatedAt = updatedClip.CreatedAt;
+            clip.TrickName = updatedClip.TrickName;
+            clip.Board = updatedClip.Board;
+            clip.Stance = updatedClip.Stance;
+            clip.Boots = updatedClip.Boots;
+            clip.Bindings = updatedClip.Bindings;
+            clip.SportTypes = updatedClip.SportTypes;
+
+            await _context.SaveChangesAsync(); 
+            return NoContent();
+        }
+
         // DELETE /api/clips/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
