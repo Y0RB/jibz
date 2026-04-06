@@ -1,5 +1,5 @@
-namespace jibz.api.Models
-{
+namespace jibz.api.Models;
+using jibz.api.Enums;
     public class User
     {
         public int Id { get; set; }
@@ -13,6 +13,7 @@ namespace jibz.api.Models
 
         public int? HomeMountainId {get; set; }
         public Mountain? HomeMountain { get; set;}
+        public SportType? SportType { get; set; }
 
         public ICollection<Clip> Clips { get; set; } = new List<Clip>();
         public ICollection<ClipLike> ClipLikes { get; set; } = new List<ClipLike>();
@@ -21,4 +22,3 @@ namespace jibz.api.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
-}
