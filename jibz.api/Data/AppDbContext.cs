@@ -16,9 +16,11 @@ namespace jibz.api.Data;
         public DbSet<ClipLike> ClipLikes { get; set; }
         public DbSet<ClipComment> ClipComments { get; set; }
         public DbSet<ClipSportType> ClipSportTypes { get; set; }
+        public DbSet<ClipUser> ClipUsers { get; set; }
         public DbSet<Feature> Features { get; set; }
         public DbSet<Mountain> Mountains { get; set; }
         public DbSet<MountainRating> MountainRatings { get; set; }
+        
         
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
