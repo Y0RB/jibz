@@ -22,9 +22,12 @@ using jibz.api.Enums;
         public int MountainId { get; set; } 
         public Mountain Mountain { get; set; } = null!;
 
+        public ClipStatus Status { get; set; } = ClipStatus.Draft;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public ICollection<ClipLike> Likes { get; set; } = new List<ClipLike>();
         public ICollection<ClipComment> Comments { get; set; } = new List<ClipComment>();
         public ICollection<ClipSportType> SportTypes { get; set; } = new List<ClipSportType>();
+        public ICollection<ClipUser> ClipUsers { get; set; } = new List<ClipUser>();
     }

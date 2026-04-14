@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using jibz.api.Data;
 
@@ -10,9 +11,11 @@ using jibz.api.Data;
 namespace Jibz.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260406190030_ClipUpdates")]
+    partial class ClipUpdates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
@@ -46,9 +49,6 @@ namespace Jibz.Api.Migrations
 
                     b.Property<string>("Stance")
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -139,36 +139,6 @@ namespace Jibz.Api.Migrations
                     b.HasKey("ClipId", "Sport");
 
                     b.ToTable("ClipSportTypes");
-                });
-
-            modelBuilder.Entity("jibz.api.Models.ClipUser", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ClipId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClipId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ClipUsers");
                 });
 
             modelBuilder.Entity("jibz.api.Models.Feature", b =>
@@ -383,25 +353,6 @@ namespace Jibz.Api.Migrations
                     b.Navigation("Clip");
                 });
 
-            modelBuilder.Entity("jibz.api.Models.ClipUser", b =>
-                {
-                    b.HasOne("jibz.api.Models.Clip", "Clip")
-                        .WithMany("ClipUsers")
-                        .HasForeignKey("ClipId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("jibz.api.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Clip");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("jibz.api.Models.Feature", b =>
                 {
                     b.HasOne("jibz.api.Models.Mountain", "Mountain")
@@ -443,8 +394,6 @@ namespace Jibz.Api.Migrations
 
             modelBuilder.Entity("jibz.api.Models.Clip", b =>
                 {
-                    b.Navigation("ClipUsers");
-
                     b.Navigation("Comments");
 
                     b.Navigation("Likes");
