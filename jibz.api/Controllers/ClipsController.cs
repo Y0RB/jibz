@@ -65,7 +65,6 @@ namespace jibz.api.Controllers
 
             clip.Title = updatedClip.Title;
             clip.Description = updatedClip.Description;
-            clip.CreatedAt = updatedClip.CreatedAt;
             clip.TrickName = updatedClip.TrickName;
             clip.Board = updatedClip.Board;
             clip.Stance = updatedClip.Stance;
