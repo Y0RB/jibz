@@ -8,10 +8,10 @@ public class ClipUser
     public int Id { get; set; }
 
     public int ClipId { get; set; }
-    public Clip Clip { get; set; }
+    public Clip Clip { get; set; } = null!;
 
     public int UserId { get; set; }
-    public User User { get; set; }
+    public User User { get; set; } = null!;
 
     public ClipUserRole Role { get; set; }
     public ClipUserStatus Status { get; set; }
