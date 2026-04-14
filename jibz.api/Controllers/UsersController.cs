@@ -62,6 +62,11 @@ namespace jibz.api.Controllers
 
             user.Username = updatedUser.Username;
             user.Email = updatedUser.Email;
+            user.Bio = updatedUser.Bio;
+            user.ProfileImageUrl = updatedUser.ProfileImageUrl;
+            user.SportType = updatedUser.SportType;
+            user.HomeMountain = updatedUser.HomeMountain;
+            
 
             await _context.SaveChangesAsync();
 
