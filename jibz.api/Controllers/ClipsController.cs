@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using jibz.api.Data;
 using jibz.api.Models;
+using jibz.api.Enums;
 
 namespace jibz.api.Controllers
 {
@@ -53,6 +54,38 @@ namespace jibz.api.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetById), new { id = clip.Id }, clip);
+        }
+
+        [HttpPost("{id}/collaborators")]
+        public async Task<IActionResult> AddCollaborator(int id, int userId)
+        {
+            var clip = await _context.Clips.FindAsync(id);
+            if (clip == null)
+                return NotFound("Clip not found.");
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+                return NotFound("User not found.");
+
+            var alreadyCollaborator = await _context.ClipUsers
+                .AnyAsync(cu => cu.ClipId == id && cu.UserId == userId);
+
+            if (alreadyCollaborator)
+                return BadRequest("User is already a collaborator on this clip.");
+
+            var clipUser = new ClipUser
+            {
+                ClipId = id,
+                UserId = userId,
+                Role = ClipUserRole.Collaborator, 
+                Status = ClipUserStatus.Pending,
+                CreatedAt = DateTime.UtcNow         
+            };
+            
+            _context.ClipUsers.Add(clipUser);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetById), new { id }, clipUser);
         }
 
         [HttpPut("{id}")]
