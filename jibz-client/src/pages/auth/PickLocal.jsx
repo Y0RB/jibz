@@ -4,12 +4,13 @@ import "./Auth.css";
 export default function PickLocal({ onBack, onFinish, loading, serverError }) {
   const [mountains, setMountains] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [fetchError, setFetchError] = useState("");
 
   useEffect(() => {
     fetch("/api/Mountains")
       .then((r) => r.json())
       .then((data) => setMountains(data))
-      .catch(() => {});
+      .catch(() => setFetchError("Couldn't load mountains. Check your connection."));
   }, []);
 
   const list = mountains.length
@@ -25,11 +26,16 @@ export default function PickLocal({ onBack, onFinish, loading, serverError }) {
         <button onClick={onBack} className="back-link">← Back</button>
         <span className="auth-step">Step 2 of 2</span>
       </div>
+
       <div className="auth-heading">
         <h2>Pick your local</h2>
         <p>Where do you ride? You can change this later.</p>
       </div>
-      {serverError && <div className="auth-error-banner">{serverError}</div>}
+
+      {(serverError || fetchError) && (
+        <div className="auth-error-banner">{serverError || fetchError}</div>
+      )}
+
       <div className="local-grid">
         {list.map((m) => (
           <button
@@ -44,6 +50,7 @@ export default function PickLocal({ onBack, onFinish, loading, serverError }) {
           </button>
         ))}
       </div>
+
       <div className="auth-form" style={{ marginTop: "24px" }}>
         <button
           type="button"
