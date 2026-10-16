@@ -1,0 +1,128 @@
+/* ─── Search bar ─── */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-card);
+  border: 0.5px solid var(--border-2);
+  border-radius: var(--r-full);
+  padding: 10px 16px;
+}
+.search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--fg);
+  font-size: 15px;
+  font-family: var(--font);
+  outline: none;
+}
+.search-input::placeholder { color: var(--fg-4); }
+
+/* ─── Tabs ─── */
+.explore-tabs {
+  display: flex;
+  padding: 0 20px;
+  gap: 4px;
+  margin-bottom: 4px;
+  border-bottom: 0.5px solid var(--border);
+}
+.explore-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--fg-3);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font);
+  padding: 10px 0;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -0.5px;
+}
+.explore-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ─── Mountain card ─── */
+.mountain-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--bg-card);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  font-family: var(--font);
+  transition: background 0.15s, transform 0.1s;
+}
+.mountain-card:active { background: var(--bg-card-2); transform: scale(0.98); }
+
+.mountain-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mountain-emoji { font-size: 32px; line-height: 1; flex-shrink: 0; }
+.mountain-info { flex: 1; }
+.mountain-name { font-size: 16px; font-weight: 700; color: var(--fg); }
+.mountain-location { font-size: 12px; color: var(--fg-3); margin-top: 2px; }
+.mountain-status {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: var(--r-full);
+}
+.mountain-status.open { background: rgba(48,209,88,0.15); color: var(--green); }
+.mountain-status.closed { background: rgba(255,69,58,0.1); color: var(--red); }
+
+.mountain-stats-row {
+  display: flex;
+  justify-content: space-around;
+  border-top: 0.5px solid var(--border);
+  padding-top: 12px;
+}
+.mountain-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.mountain-stat-val { font-size: 16px; font-weight: 700; color: var(--fg); font-variant-numeric: tabular-nums; }
+.mountain-stat-label { font-size: 11px; color: var(--fg-3); }
+
+/* ─── Leaderboard ─── */
+.lb-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+.lb-rank {
+  font-size: 18px;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.lb-info { flex: 1; }
+.lb-name { font-size: 14px; font-weight: 700; color: var(--fg); }
+.lb-handle { font-size: 12px; color: var(--fg-3); margin-top: 1px; }
+.lb-score {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
