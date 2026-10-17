@@ -62,6 +62,33 @@ public class AuthController : ControllerBase
         return Ok(new { token, userId = user.Id, username = user.Username });
     }
 
+    // POST /api/auth/dev-login — Development only. Signs in as a shared "devrider"
+    // test account (created on first use) so you can test without registering.
+    [HttpPost("dev-login")]
+    public async Task<IActionResult> DevLogin([FromServices] IWebHostEnvironment env)
+    {
+        if (!env.IsDevelopment()) return NotFound();
+
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == "devrider");
+        if (user == null)
+        {
+            user = new User
+            {
+                Username = "devrider",
+                Email = "devrider@jibz.test",
+                // Random password nobody knows; this account is only reachable through dev-login
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()),
+                HomeMountainId = await _db.Mountains.Select(m => (int?)m.Id).FirstOrDefaultAsync(),
+                CreatedAt = DateTime.UtcNow
+            };
+            _db.Users.Add(user);
+            await _db.SaveChangesAsync();
+        }
+
+        var token = GenerateToken(user);
+        return Ok(new { token, userId = user.Id, username = user.Username });
+    }
+
     private string GenerateToken(User user)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));

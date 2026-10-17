@@ -62,7 +62,8 @@ function FeatureReelCard({ clip, onUserTap }) {
   const [showGear, setShowGear] = useState(false);
 
   const toggleLike = () => {
-    setLiked(p => { setLikeCount(c => p ? c - 1 : c + 1); return !p; });
+    setLikeCount(c => liked ? c - 1 : c + 1);
+    setLiked(!liked);
   };
 
   return (

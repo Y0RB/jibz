@@ -9,6 +9,8 @@ import FeatureClips from './pages/FeatureClips';
 import MountainClips from './pages/MountainClips';
 import UserProfile from './pages/UserProfile';
 import UserClips from './pages/UserClips';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
 import './styles/app.css';
 
 function AppShell() {
@@ -18,6 +20,16 @@ function AppShell() {
   const isFeatureClips = location.pathname.startsWith('/feature/');
   const isMountainClips = location.pathname.startsWith('/mountain/');
   const isUserClips = location.pathname.endsWith('/clips');
+  const isAuth = location.pathname === '/login' || location.pathname === '/register';
+
+  if (isAuth) {
+    return (
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Routes>
+    );
+  }
 
   if (isReels || isFeatureClips || isMountainClips || isUserClips) {
     return (

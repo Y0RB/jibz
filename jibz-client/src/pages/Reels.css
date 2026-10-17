@@ -139,6 +139,183 @@
 }
 .gear-btn { color: rgba(255,255,255,0.85); }
 
+/* Volume: a circle that grows upward into a vertical slider when held
+   (bottom = quiet, top = loud). The pill also reaches a little below the icon. */
+.vol-control {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  cursor: pointer;
+}
+.vol-track-hit {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 44px;
+  height: 44px;
+  box-sizing: border-box;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 22px;
+  background: rgba(10,10,12,0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 0.5px solid rgba(255,255,255,0.15);
+  overflow: hidden;
+  transition: height 0.22s ease, bottom 0.22s ease;
+}
+.vol-control.expanded .vol-track-hit {
+  height: 200px;
+  bottom: -12px;
+  padding: 18px 0 64px;
+}
+.vol-track {
+  position: relative;
+  flex: 1;
+  width: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.25);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.vol-control.expanded .vol-track { opacity: 1; transition-delay: 0.08s; }
+.vol-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 2px;
+  background: #fff;
+}
+.vol-thumb {
+  position: absolute;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transform: translate(-50%, 50%);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+.vol-button {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  pointer-events: none;
+}
+.vol-control:active .vol-button { transform: scale(0.9); }
+
+/* Tap-to-show video controls: center play/pause + bottom timeline */
+.reel-info { transition: transform 0.15s ease; }
+.reel-card.controls-on .reel-info { transform: translateY(-16px); }
+.reel-center-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 72px;
+  height: 72px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  animation: reel-controls-in 0.15s ease;
+}
+.reel-center-btn:active { transform: translate(-50%, -50%) scale(0.92); }
+
+.video-timeline {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(83px + env(safe-area-inset-bottom, 0px) + 2px);
+  height: 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
+  z-index: 5;
+  animation: reel-controls-in 0.15s ease;
+}
+.video-timeline-time {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  min-width: 30px;
+}
+.video-timeline-time:last-child { text-align: right; }
+.video-timeline-bar {
+  position: relative;
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.3);
+  transition: height 0.1s;
+}
+.video-timeline.scrubbing .video-timeline-bar,
+.video-timeline:hover .video-timeline-bar { height: 5px; }
+.video-timeline-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 2px;
+  background: #fff;
+}
+.video-timeline-thumb {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+@keyframes reel-controls-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Double-tap like */
+.reel-heart-burst {
+  position: absolute;
+  color: #ff453a;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.35));
+  animation: reel-heart 0.9s ease forwards;
+  z-index: 4;
+}
+@keyframes reel-heart {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4) rotate(-12deg); }
+  20%  { opacity: 1; transform: translate(-50%, -50%) scale(1.15) rotate(-6deg); }
+  35%  { transform: translate(-50%, -50%) scale(0.95) rotate(-6deg); }
+  70%  { opacity: 1; transform: translate(-50%, -60%) scale(1) rotate(-6deg); }
+  100% { opacity: 0; transform: translate(-50%, -110%) scale(0.9) rotate(-6deg); }
+}
+
 /* Gear / comment panel */
 .gear-panel {
   position: absolute;
@@ -290,3 +467,39 @@
   font-family: inherit;
 }
 .comment-send:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* Owner menu: edit / delete a clip */
+.manage-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  border-radius: 14px;
+  border: 0.5px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.manage-option:active { background: rgba(255,255,255,0.12); }
+.manage-option.danger { color: #ff453a; }
+.manage-warning {
+  color: rgba(255,255,255,0.7);
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0 0 16px;
+}
+.manage-error {
+  color: #ff453a;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.btn-primary.manage-delete-btn { background: #e5372b; }
+
+/* Sheets portaled to <body> cover the whole screen, above the bottom nav (z 100) */
+body > .gear-panel { position: fixed; z-index: 150; }
