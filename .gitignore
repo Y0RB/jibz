@@ -10,3 +10,9 @@ node_modules/
 
 # Env
 .env
+# Uploaded clip videos
+jibz.api/wwwroot/uploads/
+
+# SQLite temp files created while the API runs
+jibz.api/jibz.db-shm
+jibz.api/jibz.db-wal

@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { apiFetch, getCurrentUser, SPORT_EMOJI } from '../api';
 import '../styles/profile.css';
 
 const USER = {
@@ -30,12 +32,78 @@ const SAVED_CLIPS = [
   { id: 9, emoji: '⛷️', feature: 'Big Air', likes: 2109, diff: 'expert' },
 ];
 
-function ClipGrid({ clips }) {
+const MY_GEAR = { board: 'Never Summer Proto Synthesis 156', boots: 'ThirtyTwo TM-3 Lace', bindings: 'Union Atlas' };
+
+// Convert a clip from GET /api/clips/user/{id} into the grid shape used here
+function fromApiClip(c, profile) {
+  const gear = {};
+  if (c.board) gear.board = c.board;
+  if (c.boots) gear.boots = c.boots;
+  if (c.bindings) gear.bindings = c.bindings;
+  return {
+    id: c.id,
+    emoji: SPORT_EMOJI[c.sport] || '🏂',
+    feature: c.feature,
+    likes: c.likes,
+    diff: c.difficulty,
+    trick: c.trick,
+    caption: c.caption,
+    comments: c.comments,
+    mountain: c.mountain,
+    videoUrl: c.videoUrl,
+    ownerId: c.userId,
+    user: { name: profile.name, handle: profile.handle, avatar: profile.avatar },
+    gear,
+  };
+}
+
+// Expand a grid clip into the full shape UserClips' reel cards render
+function toReelClip(clip, profile) {
+  return {
+    id: clip.id,
+    user: clip.user || { name: profile.name, handle: profile.handle, avatar: profile.avatar },
+    mountain: clip.mountain || profile.mountain,
+    feature: clip.feature,
+    trick: clip.trick || clip.feature,
+    caption: clip.caption || '',
+    sport: clip.emoji,
+    difficulty: clip.diff,
+    likes: clip.likes,
+    comments: clip.comments || 0,
+    saves: clip.saves || 0,
+    videoUrl: clip.videoUrl,
+    ownerId: clip.ownerId,
+    trickName: clip.trick || '',
+    captionText: clip.caption || '',
+    bg: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+    gear: clip.gear || MY_GEAR,
+  };
+}
+
+function ClipGrid({ clips, title, profile }) {
+  const navigate = useNavigate();
+
+  const openClip = (index) => {
+    navigate(`/user/${encodeURIComponent(profile.handle)}/clips`, {
+      state: { clips: clips.map(c => toReelClip(c, profile)), startIndex: index, title },
+    });
+  };
+
   return (
     <div className="clip-grid">
-      {clips.map(clip => (
-        <button key={clip.id} className="clip-grid-item">
-          <span className="clip-grid-emoji">{clip.emoji}</span>
+      {clips.map((clip, i) => (
+        <button key={clip.id} className="clip-grid-item" onClick={() => openClip(i)}>
+          {clip.videoUrl ? (
+            <video
+              src={`${clip.videoUrl}#t=0.1`}
+              muted
+              playsInline
+              preload="metadata"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <span className="clip-grid-emoji">{clip.emoji}</span>
+          )}
           <div className="clip-grid-overlay">
             <span className="clip-grid-likes">♥ {clip.likes}</span>
           </div>
@@ -51,6 +119,19 @@ function ClipGrid({ clips }) {
 export default function Profile() {
   const [tab, setTab] = useState('clips'); // 'clips' | 'saved'
   const [editing, setEditing] = useState(false);
+  const me = getCurrentUser();
+  // Logged in: real name and clips from the API. Logged out: the sample profile.
+  const profile = me ? { ...USER, name: me.username, handle: `@${me.username}` } : USER;
+  const [myClips, setMyClips] = useState(me ? [] : MY_CLIPS);
+  const [loadError, setLoadError] = useState('');
+
+  useEffect(() => {
+    if (!me) return;
+    apiFetch(`/api/clips/user/${me.id}`)
+      .then(list => setMyClips(list.map(c => fromApiClip(c, profile))))
+      .catch(err => setLoadError(err.message));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me?.id]);
 
   return (
     <div className="screen">
@@ -68,16 +149,16 @@ export default function Profile() {
 
         {/* Avatar + info */}
         <div className="profile-hero">
-          <div className="profile-avatar">{USER.avatar}</div>
-          <div className="profile-name">{USER.name}</div>
-          <div className="profile-handle">{USER.handle}</div>
-          <div className="profile-meta">{USER.sport} · {USER.mountain}</div>
-          <p className="profile-bio">{USER.bio}</p>
+          <div className="profile-avatar">{profile.avatar}</div>
+          <div className="profile-name">{profile.name}</div>
+          <div className="profile-handle">{profile.handle}</div>
+          <div className="profile-meta">{profile.sport} · {profile.mountain}</div>
+          <p className="profile-bio">{profile.bio}</p>
 
           {/* Stats */}
           <div className="profile-stats">
             <div className="profile-stat">
-              <span className="profile-stat-val">{USER.clips}</span>
+              <span className="profile-stat-val">{me ? myClips.length : USER.clips}</span>
               <span className="profile-stat-label">Clips</span>
             </div>
             <div className="profile-stat-divider" />
@@ -115,8 +196,23 @@ export default function Profile() {
           </button>
         </div>
 
-        {tab === 'clips' && <ClipGrid clips={MY_CLIPS} />}
-        {tab === 'saved' && <ClipGrid clips={SAVED_CLIPS} />}
+        {tab === 'clips' && (
+          <>
+            {!me && (
+              <div style={{ padding: '12px 20px', fontSize: 13, color: 'var(--fg-3)', textAlign: 'center' }}>
+                You're not logged in. This is a sample profile. <Link to="/login" style={{ color: 'var(--accent)' }}>Log in</Link> to see yours.
+              </div>
+            )}
+            {loadError && <div style={{ padding: '12px 20px', fontSize: 13, color: '#e24b4a' }}>{loadError}</div>}
+            {me && !loadError && myClips.length === 0 && (
+              <div style={{ padding: '32px 20px', fontSize: 14, color: 'var(--fg-3)', textAlign: 'center' }}>
+                No clips yet. <Link to="/post" style={{ color: 'var(--accent)' }}>Post your first one</Link>
+              </div>
+            )}
+            <ClipGrid clips={myClips} title="My Clips" profile={profile} />
+          </>
+        )}
+        {tab === 'saved' && <ClipGrid clips={SAVED_CLIPS} title="Saved" profile={profile} />}
       </div>
 
       {/* Edit modal */}
@@ -127,11 +223,11 @@ export default function Profile() {
             <h3 className="gear-title">Edit Profile</h3>
             <div className="field">
               <label>Display Name</label>
-              <input defaultValue={USER.name} placeholder="Your name" />
+              <input defaultValue={profile.name} placeholder="Your name" />
             </div>
             <div className="field">
               <label>Handle</label>
-              <input defaultValue={USER.handle} placeholder="@handle" />
+              <input defaultValue={profile.handle} placeholder="@handle" />
             </div>
             <div className="field">
               <label>Bio</label>

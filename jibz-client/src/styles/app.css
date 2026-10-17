@@ -448,3 +448,4 @@ body {
 .field input:focus,
 .field textarea:focus { border-color: var(--accent); }
 .field textarea { resize: none; }
+.field select option { background: #1a1d23; color: #fff; }
