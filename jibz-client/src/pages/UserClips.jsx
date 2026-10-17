@@ -1,5 +1,10 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import VolumeControl from '../components/VolumeControl';
+import VideoTimeline from '../components/VideoTimeline';
+import ClipManageSheet from '../components/ClipManageSheet';
+import { getCurrentUser } from '../api';
 import './Reels.css';
 
 // Same user clip data as UserProfile — keyed by handle
@@ -65,25 +70,139 @@ function GearPanel({ gear, onClose }) {
   );
 }
 
-function UserReelCard({ clip }) {
+const DOUBLE_TAP_MS = 250;      // second tap within this = like
+const CONTROLS_HIDE_MS = 3000;  // controls fade out after this while playing
+
+function UserReelCard({ clip, active, sound, isOwner, onUpdated, onDeleted }) {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [likeCount, setLikeCount] = useState(clip.likes);
   const [panel, setPanel] = useState(null);
+  const [paused, setPaused] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(false);
+  const [hearts, setHearts] = useState([]); // double-tap bursts: { id, x, y }
+  const videoRef = useRef(null);
+  const tapTimer = useRef(null);
+  const hideTimer = useRef(null);
+
+  // Controls hide on their own after a few seconds of playback
+  const scheduleHide = () => {
+    clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => {
+      if (videoRef.current && !videoRef.current.paused) setControlsVisible(false);
+    }, CONTROLS_HIDE_MS);
+  };
+
+  const showControls = () => {
+    setControlsVisible(true);
+    scheduleHide();
+  };
+
+  useEffect(() => () => {
+    clearTimeout(tapTimer.current);
+    clearTimeout(hideTimer.current);
+  }, []);
+
+  // Only the clip on screen plays; scrolling back to a clip resumes it
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (active) {
+      setPaused(false);
+      setControlsVisible(false);
+      v.play().catch(() => {
+        // Browser blocked autoplay with sound; fall back to muted
+        sound.setMuted(true);
+        v.muted = true;
+        v.play().catch(() => {});
+      });
+    } else {
+      v.pause();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
+
+  // Volume and mute are shared across clips
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.volume = sound.volume;
+    v.muted = sound.muted;
+  }, [sound.volume, sound.muted]);
+
+  const togglePlay = (e) => {
+    e?.stopPropagation();
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      v.play().catch(() => {});
+      setPaused(false);
+      scheduleHide();
+    } else {
+      v.pause();
+      setPaused(true);
+      clearTimeout(hideTimer.current); // stay visible while paused
+    }
+  };
 
   const toggleLike = () => {
-    setLiked(p => { setLikeCount(c => p ? c - 1 : c + 1); return !p; });
+    setLikeCount(c => liked ? c - 1 : c + 1);
+    setLiked(!liked);
+  };
+
+  // Single tap toggles the controls; a quick second tap likes instead
+  const onVisualClick = (e) => {
+    if (tapTimer.current) {
+      clearTimeout(tapTimer.current);
+      tapTimer.current = null;
+      if (!liked) toggleLike();
+      const rect = e.currentTarget.getBoundingClientRect();
+      const heart = { id: Date.now(), x: e.clientX - rect.left, y: e.clientY - rect.top };
+      setHearts(h => [...h, heart]);
+      setTimeout(() => setHearts(h => h.filter(x => x.id !== heart.id)), 900);
+      return;
+    }
+    tapTimer.current = setTimeout(() => {
+      tapTimer.current = null;
+      if (!clip.videoUrl) return;
+      if (controlsVisible && !paused) {
+        clearTimeout(hideTimer.current);
+        setControlsVisible(false);
+      } else {
+        showControls();
+      }
+    }, DOUBLE_TAP_MS);
   };
 
   return (
-    <div className="reel-card" style={{ background: clip.bg }}>
-      <div className="reel-visual">
-        <div className="reel-sport-emoji">{clip.sport}</div>
-        <div className="reel-mountain-label">{clip.mountain}</div>
-        <div className="reel-feature-label">{clip.feature}</div>
+    <div className={`reel-card${controlsVisible && clip.videoUrl ? ' controls-on' : ''}`} style={{ background: clip.bg }}>
+      <div className="reel-visual" onClick={onVisualClick}>
+        {clip.videoUrl ? (
+          <video
+            ref={videoRef}
+            src={clip.videoUrl}
+            loop
+            muted={sound.muted}
+            playsInline
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : (
+          <>
+            <div className="reel-sport-emoji">{clip.sport}</div>
+            <div className="reel-mountain-label">{clip.mountain}</div>
+            <div className="reel-feature-label">{clip.feature}</div>
+          </>
+        )}
         <div className={`diff-badge ${clip.difficulty}`} style={{ position: 'absolute', top: 16, right: 16 }}>
           {clip.difficulty}
         </div>
+        {hearts.map(h => (
+          <div key={h.id} className="reel-heart-burst" style={{ left: h.x, top: h.y }}>
+            <svg viewBox="0 0 24 24" fill="currentColor" width={96} height={96}>
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </div>
+        ))}
       </div>
 
       <div className="reel-overlay" />
@@ -98,10 +217,19 @@ function UserReelCard({ clip }) {
             </div>
           </div>
         </div>
-        <p className="reel-caption">{clip.trick} · {clip.caption}</p>
+        <p className="reel-caption">{clip.caption ? `${clip.trick} · ${clip.caption}` : clip.trick}</p>
       </div>
 
       <div className="reel-actions">
+        {clip.videoUrl && (
+          <VolumeControl
+            volume={sound.volume}
+            muted={sound.muted}
+            onVolumeChange={sound.setVolume}
+            onMutedChange={sound.setMuted}
+          />
+        )}
+
         <button className={`reel-action-btn${liked ? ' liked' : ''}`} onClick={toggleLike}>
           <svg viewBox="0 0 24 24" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={liked ? 0 : 2} width={26} height={26}>
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -130,9 +258,66 @@ function UserReelCard({ clip }) {
           </svg>
           <span className="reel-action-count">Gear</span>
         </button>
+
+        {isOwner && (
+          <button className="reel-action-btn" onClick={() => setPanel('manage')} aria-label="Edit or delete clip">
+            <svg viewBox="0 0 24 24" fill="currentColor" width={26} height={26}>
+              <circle cx="5" cy="12" r="2"/>
+              <circle cx="12" cy="12" r="2"/>
+              <circle cx="19" cy="12" r="2"/>
+            </svg>
+            <span className="reel-action-count">More</span>
+          </button>
+        )}
       </div>
 
-      {panel === 'gear' && <GearPanel gear={clip.gear} onClose={() => setPanel(null)} />}
+      {clip.videoUrl && controlsVisible && (
+        <>
+          <button
+            className="reel-center-btn"
+            onClick={togglePlay}
+            aria-label={paused ? 'Play' : 'Pause'}
+          >
+            {paused ? (
+              <svg viewBox="0 0 24 24" fill="currentColor" width={34} height={34}>
+                <polygon points="7 4 20 12 7 20 7 4" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="currentColor" width={32} height={32}>
+                <rect x="6" y="4" width="4" height="16" rx="1" />
+                <rect x="14" y="4" width="4" height="16" rx="1" />
+              </svg>
+            )}
+          </button>
+          <VideoTimeline videoRef={videoRef} onInteract={() => (paused ? clearTimeout(hideTimer.current) : scheduleHide())} />
+        </>
+      )}
+
+      {/* Sheets render on <body> so they sit above the bottom nav, which the
+          reels scroll container can't (it's its own stacking layer) */}
+      {panel === 'gear' && createPortal(<GearPanel gear={clip.gear} onClose={() => setPanel(null)} />, document.body)}
+      {panel === 'manage' && createPortal(
+        <ClipManageSheet
+          clip={clip}
+          onClose={() => setPanel(null)}
+          onUpdated={onUpdated}
+          onDeleted={onDeleted}
+          onBeforeDelete={() => {
+            const v = videoRef.current;
+            if (!v) return;
+            v.pause();
+            v.removeAttribute('src');
+            v.load(); // drops the open connection to the file
+          }}
+          onDeleteFailed={() => {
+            const v = videoRef.current;
+            if (!v) return;
+            v.src = clip.videoUrl;
+            if (active) v.play().catch(() => {});
+          }}
+        />,
+        document.body
+      )}
     </div>
   );
 }
@@ -140,10 +325,36 @@ function UserReelCard({ clip }) {
 export default function UserClips() {
   const { handle } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const decodedHandle = decodeURIComponent(handle);
-  const clips = USER_CLIPS[decodedHandle] || [];
-  const [current, setCurrent] = useState(0);
+  // Callers like Profile can pass their own clip list and which one was tapped
+  const passed = location.state;
+  const [clips, setClips] = useState(() => passed?.clips || USER_CLIPS[decodedHandle] || []);
+  const startIndex = passed?.startIndex || 0;
+  const me = getCurrentUser();
+
+  const updateClip = (id, changes) =>
+    setClips(list => list.map(c => (c.id === id ? { ...c, ...changes } : c)));
+
+  const deleteClip = (id) => {
+    const remaining = clips.filter(c => c.id !== id);
+    if (remaining.length === 0) {
+      navigate(-1); // nothing left to watch; back to the profile (it reloads from the API)
+      return;
+    }
+    setClips(remaining);
+    setCurrent(i => Math.min(i, remaining.length - 1));
+  };
+  const [current, setCurrent] = useState(startIndex);
+  const [volume, setVolume] = useState(1);
+  const [muted, setMuted] = useState(false);
+  const sound = { volume, muted, setVolume, setMuted };
   const containerRef = useRef(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (el && startIndex > 0) el.scrollTop = startIndex * el.clientHeight;
+  }, [startIndex]);
 
   const handleScroll = useCallback(() => {
     if (!containerRef.current) return;
@@ -160,7 +371,7 @@ export default function UserClips() {
   }, [handleScroll]);
 
   // Get the user's name for the back button
-  const userName = clips[0]?.user.name || decodedHandle;
+  const userName = passed?.title || clips[0]?.user.name || decodedHandle;
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -195,8 +406,16 @@ export default function UserClips() {
       </div>
 
       <div className="reels-container" ref={containerRef}>
-        {clips.length > 0 ? clips.map(clip => (
-          <UserReelCard key={clip.id} clip={clip} />
+        {clips.length > 0 ? clips.map((clip, i) => (
+          <UserReelCard
+            key={clip.id}
+            clip={clip}
+            active={i === current}
+            sound={sound}
+            isOwner={!!me && clip.ownerId === me.id}
+            onUpdated={changes => updateClip(clip.id, changes)}
+            onDeleted={() => deleteClip(clip.id)}
+          />
         )) : (
           <div style={{
             height: '100%', display: 'flex', flexDirection: 'column',
